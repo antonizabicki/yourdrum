@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Download YOURDRUM beta installers for Windows x64 and macOS Universal. Installation help, requirements and file checksums." />
+  <title>YOURDRUM — Get the beta</title>
+  <link rel="canonical" href="https://yourdrum.what-is-next.vip/beta/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="YOURDRUM — Download the public beta" />
+  <meta property="og:description" content="Get YOURDRUM 1.0.0 beta for Windows x64 and macOS Universal. Installers, manual downloads, requirements and help." />
+  <meta property="og:url" content="https://yourdrum.what-is-next.vip/beta/" />
+  <meta property="og:image" content="https://yourdrum.what-is-next.vip/img.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../asdasfasfag.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../assets/fonts.css" />
+  <link rel="stylesheet" href="../assets/downloads.css" />
+  <script src="../assets/beta-data.js" defer></script>
+  <script src="../assets/downloads.js" defer></script>
+</head>
+<body>
+  <header class="nav wrap">
+    <a href="../index.html" aria-label="YOURDRUM home"><img src="../asdasfasfag.svg" alt="YOURDRUM" /></a>
+    <a class="back" href="../index.html">← Back to the engine</a>
+  </header>
+  <main class="wrap">
+    <section class="intro">
+      <div class="eyebrow"><span class="status-dot"></span> PUBLIC BETA / VST3 INSTRUMENT</div>
+      <h1>Your next<br><span>hit starts here.</span></h1>
+      <p>One sample. More possibilities. Get YOURDRUM for your system, install it, and make it yours.</p>
+      <div class="release-meta"><span>PLUGIN 1.0.0</span><span>PACKAGED 10 OCT 2026</span><span>WINDOWS + MACOS</span></div>
+    </section>
+    <section aria-label="Choose your download">
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filter by operating system">
+          <button type="button" data-platform="all" aria-pressed="true">All systems</button>
+          <button type="button" data-platform="windows" aria-pressed="false">Windows</button>
+          <button type="button" data-platform="macos" aria-pressed="false">macOS</button>
+        </div>
+        <label class="search"><span class="sr-only">Search downloads</span><input id="searchInput" type="search" placeholder="Search downloads…" /></label>
+      </div>
+      <div class="downloads" id="downloads">
+        <article class="download-card"><h2>Windows</h2><p>Windows 10/11 x64 · VST3</p><a class="download-btn" href="downloads/YOURDRUM-1.0.0-beta-Windows-Setup.exe" download>Download Windows installer ↗</a></article>
+        <article class="download-card"><h2>macOS</h2><p>macOS 15.2+ · Apple Silicon + Intel · VST3</p><a class="download-btn" href="downloads/YOURDRUM-1.0.0-beta-macOS.pkg" download>Download macOS installer ↗</a></article>
+      </div>
+      <p id="emptyState" class="empty" hidden>No matching downloads. Try a different search or choose All systems.</p>
+      <p class="package-note">These beta installers are unsigned; the macOS package is not notarized. Your system may require approval before opening. This is a VST3 instrument for a compatible DAW. Logic Pro requires an Audio Unit, which is not included.</p>
+    </section>
+    <section class="installation" aria-labelledby="installTitle">
+      <div class="eyebrow">THREE STEPS TO YOUR FIRST HIT</div>
+      <h2 id="installTitle">Install. Rescan. Play.</h2>
+      <div class="steps">
+        <article><span>01</span><h3>Close your DAW.</h3><p>Download the installer for your system. Keep your music projects saved before installing or updating.</p></article>
+        <article><span>02</span><h3>Run the installer.</h3><p>The plugin goes to the standard VST3 folder. Windows also sets up the required Microsoft Visual C++ x64 runtime when needed.</p></article>
+        <article><span>03</span><h3>Make some noise.</h3><p>Reopen your DAW, rescan VST3 plugins, and add YOURDRUM to an instrument track. Load a drum one-shot and start shaping.</p></article>
+      </div>
+      <div class="help">
+        <details><summary>Known beta limitations</summary><div><p>The macOS plugin declares a factory preset without a name. This may appear as a blank entry in your DAW’s preset list. This issue belongs to the original plugin binary and remains in this beta. The plugin’s DSP supports 32-bit floating-point processing; 64-bit audio processing is not supported.</p><p>Installer payloads were checked. The Windows installer still needs an installation and DAW test on a real Windows x64 machine.</p></div></details>
+        <details><summary>Where is the plugin installed?</summary><div><p><b>Windows</b><br><code>C:\Program Files\Common Files\VST3\YourDrum.vst3</code></p><p><b>macOS</b><br><code>/Library/Audio/Plug-Ins/VST3/YourDrum.vst3</code></p></div></details>
+        <details><summary>My DAW cannot find YOURDRUM.</summary><div><p>Confirm the OS requirements, enable VST3 scanning and rescan the standard folder. YOURDRUM is an instrument: add it to an instrument or MIDI track. On Windows, confirm that Microsoft Visual C++ x64 runtime installed successfully. The macOS build requires 15.2 or newer.</p></div></details>
+        <details><summary>Can I install the plugin manually?</summary><div><p>Choose “Manual VST3 ZIP” on the download card, extract the archive and copy the complete <code>YourDrum.vst3</code> bundle to the folder above. On Windows, the Microsoft Visual C++ x64 runtime is still required. Then rescan plugins in your DAW.</p></div></details>
+        <details><summary>How do I remove YOURDRUM?</summary><div><p>Close your DAW. On Windows, use Settings → Apps → YOURDRUM → Uninstall. On macOS, move <code>YourDrum.vst3</code> from the installation folder to the Trash. Your own samples and projects stay in their original folders.</p></div></details>
+        <details><summary>Why do the original ZIP names show an older version?</summary><div><p>The downloads were retrieved from the official beta directory. Both plugin binaries report version 1.0.0. The Windows source archive is named <code>YourDrum0.1.0Win.zip</code>, and the macOS source is <code>YourDrum-0.1.1OSX.zip</code>. The binaries are unchanged; the installers and distribution packaging are new.</p></div></details>
+      </div>
+    </section>
+  </main>
+  <footer class="wrap"><span>© 2026 YOURDRUM / WHAT-IS-NEXT™</span><a href="../index.html#demo">Hear it in action ↗</a></footer>
+</body>
+</html>

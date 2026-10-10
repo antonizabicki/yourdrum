@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOURDRUM™ - Control Your Drum More</title>
+  <meta name="description" content="YOURDRUM™ is a compact drum design VST built around Spectral Gate, Phase Distortion, Sploinger and Resynthesis." />
+  <link rel="canonical" href="https://yourdrum.what-is-next.vip/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="YOURDRUM — Control your drum more" />
+  <meta property="og:description" content="Shape your drums with YOURDRUM. Hear the interactive demo and download the public beta for Windows and macOS." />
+  <meta property="og:url" content="https://yourdrum.what-is-next.vip/" />
+  <meta property="og:image" content="https://yourdrum.what-is-next.vip/img.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23050505%22/%3E%3Cpath%20d%3D%22M10%2018h18c9%200%209%2012%200%2012H18v16h-8V18Z%22%20fill%3D%22%23f7f7f2%22/%3E%3Cpath%20d%3D%22M36%2018h8v28h-8z%22%20fill%3D%22%23f7f7f2%22/%3E%3Cpath%20d%3D%22M49%2015l2.8%2010.2L62%2028l-10.2%202.8L49%2041l-2.8-10.2L36%2028l10.2-2.8L49%2015Z%22%20fill%3D%22%23ff7b17%22/%3E%3C/svg%3E" />
+
+  <style>
+
+
+    :root {
+      --bg: #040404;
+      --line: rgba(255,255,255,.86);
+      --line-soft: rgba(255,255,255,.12);
+      --text: #f7f7f2;
+      --muted: rgba(247,247,242,.68);
+      --dim: rgba(247,247,242,.42);
+      --orange: #ff7b17;
+      --orange-soft: rgba(255,123,23,.10);
+      --side: clamp(18px, 4vw, 58px);
+      --max: 1380px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      background: var(--bg);
+      color: var(--text);
+      scroll-behavior: auto;
+      scrollbar-width: none;
+    }
+
+    html.lenis { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 56%, rgba(255,123,23,.18), transparent 17%),
+        radial-gradient(circle at 77% 70%, rgba(255,123,23,.16), transparent 18%),
+        radial-gradient(circle at 60% 22%, rgba(255,123,23,.08), transparent 16%),
+        linear-gradient(180deg, #030303 0%, #080808 48%, #030303 100%);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .10;
+      mix-blend-mode: screen;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    }
+
+    ::selection { background: var(--orange); color: #050505; }
+    ::-moz-selection { background: var(--orange); color: #050505; }
+
+    a { color: inherit; text-decoration: none; }
+
+    img {
+      display: block;
+      max-width: 100%;
+      -webkit-user-drag: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body,
+    a,
+    button,
+    img { -webkit-tap-highlight-color: transparent; }
+
+    .container {
+      width: min(calc(100% - var(--side) * 2), var(--max));
+      margin: 0 auto;
+    }
+
+    .cursor-dot,
+    .cursor-ring,
+    .cursor-label {
+      position: fixed;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      z-index: 100;
+      transform: translate(-50%, -50%);
+    }
+
+    .cursor-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text);
+      box-shadow: 0 0 14px rgba(255,255,255,.25);
+    }
+
+    .cursor-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.52);
+      background: rgba(255,255,255,.03);
+      transition: width .18s ease, height .18s ease, border-color .18s ease, background .18s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .cursor-label {
+      margin-top: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(8,8,8,.72);
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      opacity: 0;
+      transition: opacity .18s ease;
+      white-space: nowrap;
+    }
+
+    .cursor-ring.active {
+      width: 56px;
+      height: 56px;
+      border-color: rgba(255,123,23,.72);
+      background: rgba(255,123,23,.08);
+      box-shadow: 0 0 36px rgba(255,123,23,.14);
+    }
+
+    .cursor-label.visible { opacity: 1; }
+
+    .nav {
+      position: fixed;
+      top: 18px;
+      left: 0;
+      right: 0;
+      z-index: 30;
+    }
+
+    .nav-inner {
+      width: min(calc(100% - var(--side) * 2), var(--max));
+      margin: 0 auto;
+      min-height: 70px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 18px;
+      align-items: center;
+      padding: 10px 14px;
+      border: 2px solid var(--line);
+      border-radius: 26px;
+      background: rgba(7,7,7,.76);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 18px 48px rgba(0,0,0,.26), inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: min(320px, 34vw);
+      height: auto;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line-soft);
+      background: rgba(255,255,255,.03);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      padding: 10px 13px;
+      border-radius: 999px;
+      color: var(--muted);
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+    }
+
+    .nav-buy {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      border-radius: 16px;
+      border: 2px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,123,23,.20), rgba(255,123,23,.08));
+      box-shadow: 0 12px 32px rgba(255,123,23,.12);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      padding: 148px 0 76px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .64fr) minmax(580px, 1.36fr);
+      gap: clamp(44px, 7vw, 128px);
+      align-items: center;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: Syne, Inter, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .hero-copy-wrap { max-width: 500px; }
+
+    .hero-title {
+      font-size: clamp(42px, 5.1vw, 82px);
+      line-height: .88;
+      letter-spacing: -.09em;
+      margin-bottom: 20px;
+    }
+
+    .hero-title .line {
+      display: block;
+      overflow: visible;
+      padding: 0 .08em .08em 0;
+    }
+
+    .hero-title .word {
+      display: inline-block;
+      transform: translateY(110%);
+      opacity: 0;
+      padding-right: .05em;
+    }
+
+    body.loaded .hero-title .word { animation: wordReveal .9s cubic-bezier(.2,.82,.16,1) forwards; }
+    body.loaded .hero-title .line:nth-child(1) .word { animation-delay: .05s; }
+    body.loaded .hero-title .line:nth-child(2) .word { animation-delay: .16s; }
+    body.loaded .hero-title .line:nth-child(3) .word { animation-delay: .27s; }
+
+    .headline-accent {
+      color: var(--orange);
+      text-shadow: 0 0 24px rgba(255,123,23,.18);
+    }
+
+    .hero-copy {
+      max-width: 455px;
+      color: var(--muted);
+      font-size: clamp(16px, 1.15vw, 18px);
+      line-height: 1.62;
+      margin-bottom: 28px;
+    }
+
+    .hero-actions {
+      display: grid;
+      gap: 12px;
+      width: min(300px, 100%);
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      min-height: 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+      border-radius: 18px;
+      border: 2px solid var(--line);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      transition: transform .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .btn.primary {
+      color: #050505;
+      background: var(--text);
+      box-shadow: 0 18px 44px rgba(255,255,255,.10);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: rgba(255,255,255,.03);
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn.primary:hover { background: var(--orange); }
+    .btn.secondary:hover { color: var(--orange); background: var(--orange-soft); }
+
+    .hero-actions .btn {
+      width: 100%;
+      min-height: 58px;
+    }
+
+    .hero-actions .btn.price-button {
+      font-size: 15px;
+      letter-spacing: -.01em;
+    }
+
+    .hero-panel {
+      position: relative;
+      border-radius: 34px;
+      border: 2px solid var(--line);
+      padding: 18px;
+      background:
+        radial-gradient(circle at 76% 62%, rgba(255,123,23,.20), transparent 24%),
+        linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      box-shadow: 0 30px 90px rgba(0,0,0,.46), inset 0 0 60px rgba(255,255,255,.012);
+      overflow: hidden;
+      transform: translateX(24px);
+    }
+
+    .hero-panel::before {
+      content: "YOURDRUM™ / VST3";
+      position: absolute;
+      left: 22px;
+      top: 18px;
+      z-index: 2;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line-soft);
+      background: rgba(5,5,5,.72);
+      color: var(--muted);
+      backdrop-filter: blur(8px);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .plugin-shot {
+      margin-top: 28px;
+      border-radius: 24px;
+      border: 2px solid var(--line);
+      overflow: hidden;
+      background: #020202;
+    }
+
+    .plugin-shot img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .hero-stat {
+      padding: 14px;
+      border-radius: 18px;
+      border: 2px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 18px;
+      letter-spacing: -.04em;
+      margin-bottom: 5px;
+    }
+
+    .hero-stat span {
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .section { padding: 86px 0; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .kicker {
+      margin-bottom: 14px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--orange);
+    }
+
+    .section-title {
+      max-width: 780px;
+      font-size: clamp(38px, 5vw, 72px);
+      line-height: .88;
+      letter-spacing: -.08em;
+    }
+
+    .section-copy {
+      max-width: 580px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.58;
+    }
+
+    .card,
+    .gallery-card,
+    .belief-card,
+    .demo-section,
+    .price-section,
+    .release-notes {
+      border: 2px solid var(--line);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 86% 10%, rgba(255,123,23,.14), transparent 26%),
+        linear-gradient(145deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      box-shadow: 0 24px 70px rgba(0,0,0,.32), inset 0 0 40px rgba(255,255,255,.012);
+    }
+
+    .overview-layout {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .card {
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .card h3,
+    .gallery-card h3,
+    .belief-card h3 {
+      font-size: 28px;
+      line-height: .94;
+      letter-spacing: -.06em;
+      margin: 14px 0 10px;
+    }
+
+    .card p,
+    .gallery-card p,
+    .belief-card p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.56;
+    }
+
+    .card small,
+    .gallery-card small,
+    .belief-card small {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .fx-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-content: start;
+    }
+
+    .gallery-card {
+      min-height: 0;
+      padding: clamp(18px, 2vw, 24px);
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      overflow: hidden;
+    }
+
+    .gallery-card.fx-wide {
+      grid-template-rows: auto auto;
+    }
+
+    .gallery-card.fx-tall {
+      grid-template-columns: minmax(112px, .42fr) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .gallery-image {
+      overflow: visible;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      line-height: 0;
+    }
+
+    .gallery-image img {
+      display: block;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    .gallery-card.fx-wide .gallery-image img {
+      max-width: 100%;
+      max-height: 165px;
+    }
+
+    .gallery-card.fx-tall .gallery-image img {
+      max-width: 128px;
+      max-height: 190px;
+    }
+
+    .gallery-copy {
+      min-width: 0;
+    }
+
+    .big-preview {
+      border: 0;
+      border-radius: 0;
+      overflow: visible;
+      margin-top: 18px;
+      background: transparent;
+    }
+
+    .big-preview img {
+      width: 100%;
+      height: auto;
+      border: 0;
+      background: transparent;
+    }
+
+    .spec-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .spec-list li {
+      list-style: none;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.52;
+    }
+
+    .spec-list li::before,
+    .bullet-list li::before {
+      content: "•";
+      color: var(--orange);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .belief-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .belief-card {
+      min-width: 0;
+      min-height: 250px;
+      padding: clamp(22px, 2.5vw, 32px);
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(34px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .belief-card.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .belief-card h3 {
+      margin: 0;
+      font-size: clamp(26px, 2.15vw, 36px);
+      line-height: .92;
+      letter-spacing: -.07em;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+
+    .belief-card p {
+      max-width: 32ch;
+    }
+
+    .demo-section {
+      padding: clamp(24px, 4vw, 42px);
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .demo-section.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .demo-layout {
+      display: grid;
+      grid-template-columns: .72fr 1.28fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .demo-section h2 {
+      font-size: clamp(38px, 5vw, 72px);
+      line-height: .88;
+      letter-spacing: -.08em;
+      margin-bottom: 16px;
+    }
+
+    .demo-section p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.58;
+      margin-bottom: 18px;
+    }
+
+    .audio-demo {
+      border: 2px solid var(--line);
+      border-radius: 26px;
+      padding: clamp(18px, 2.2vw, 28px);
+      background:
+        radial-gradient(circle at 86% 10%, rgba(255,123,23,.14), transparent 28%),
+        rgba(0,0,0,.35);
+      min-width: 0;
+    }
+
+    .audio-transport {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .audio-play {
+      min-height: 46px;
+      white-space: nowrap;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 6px;
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .mode-btn,
+    .solo-btn {
+      appearance: none;
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: uppercase;
+      cursor: none;
+    }
+
+    .mode-btn {
+      min-height: 38px;
+      border-radius: 13px;
+      font-size: 11px;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .mode-btn.active {
+      background: var(--text);
+      color: #050505;
+    }
+
+    .demo-clock {
+      color: var(--dim);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .demo-progress {
+      height: 8px;
+      margin: 0 0 18px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.08);
+    }
+
+    .demo-progress span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--orange);
+      transform-origin: left center;
+    }
+
+    .stem-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .stem-row {
+      display: grid;
+      grid-template-columns: 48px minmax(120px, 210px) 1fr;
+      gap: 12px;
+      align-items: center;
+      min-height: 64px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 18px;
+      background: rgba(255,255,255,.025);
+      transition: border-color .18s ease, background .18s ease;
+    }
+
+    .stem-row.soloed {
+      border-color: rgba(255,123,23,.72);
+      background: rgba(255,123,23,.07);
+    }
+
+    .stem-row.muted-row {
+      opacity: .42;
+    }
+
+    .solo-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2);
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+
+    .solo-btn.active {
+      color: #050505;
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+
+    .stem-name strong {
+      display: block;
+      font-family: Syne, Inter, sans-serif;
+      font-size: 24px;
+      line-height: .92;
+      letter-spacing: -.06em;
+      text-transform: uppercase;
+    }
+
+    .stem-name span {
+      display: block;
+      margin-top: 4px;
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .stem-meter {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.08);
+    }
+
+    .stem-meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--orange), rgba(255,255,255,.82));
+      opacity: .86;
+      transform-origin: left center;
+      transition: width .055s linear, opacity .18s ease;
+    }
+
+    .stem-row.muted-row .stem-meter span {
+      opacity: .32;
+    }
+
+    .audio-note {
+      margin: 14px 0 0 !important;
+      font-size: 13px !important;
+      color: var(--dim) !important;
+    }
+
+    .price-section {
+      padding: clamp(28px, 5vw, 52px);
+      text-align: center;
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .price-section.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .price-section h2 {
+      max-width: 900px;
+      margin: 0 auto 16px;
+      font-size: clamp(38px, 5vw, 72px);
+      line-height: .88;
+      letter-spacing: -.08em;
+    }
+
+    .price-section p {
+      max-width: 720px;
+      margin: 0 auto 18px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.58;
+    }
+
+    .price-callout {
+      margin: 24px auto;
+      width: fit-content;
+      max-width: 100%;
+      display: grid;
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 18px;
+      padding: 16px 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line-soft);
+      background: rgba(255,255,255,.035);
+      text-align: left;
+    }
+
+    .price-callout strong {
+      display: block;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--orange);
+      letter-spacing: -.08em;
+    }
+
+    .price-callout span {
+      display: block;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .final-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .reveal-block {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal-block.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    footer {
+      padding: 38px 0 48px;
+      color: rgba(247,247,242,.58);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding-top: 24px;
+      margin-bottom: 18px;
+    }
+
+    .footer-link {
+      color: var(--text);
+      font-weight: 700;
+      transition: color .18s ease;
+    }
+
+    .footer-link:hover { color: var(--orange); }
+
+    .release-notes {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 26px;
+      align-items: center;
+      padding: 22px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .release-notes-head strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .release-notes-head span {
+      color: var(--dim);
+      font-size: 10px;
+    }
+
+    .release-note-list {
+      display: grid;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .release-note-list li {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .release-version {
+      color: var(--orange);
+      font-weight: 700;
+    }
+
+
+    @keyframes wordReveal {
+      0% { transform: translateY(110%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+
+    .gallery-card h3 {
+      font-size: clamp(23px, 1.55vw, 28px);
+      letter-spacing: -.055em;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+
+    .gallery-card.fx-wide,
+    .gallery-card.fx-tall {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .gallery-image {
+      width: 100%;
+      min-height: auto;
+    }
+
+    .gallery-card.fx-wide .gallery-image img,
+    .gallery-card.fx-tall .gallery-image img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .gallery-card.fx-wide .gallery-image img {
+      max-height: 174px;
+    }
+
+    .gallery-card.fx-tall .gallery-image img {
+      max-height: 178px;
+    }
+
+    .gallery-copy {
+      align-self: end;
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid,
+      .section-head,
+      .overview-layout,
+      .demo-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-grid { gap: 28px; }
+      .hero-panel { min-width: 0; transform: none; }
+      .section-copy { max-width: 760px; }
+    }
+
+    @media (max-width: 900px) {
+      body { cursor: auto; }
+
+      .cursor-dot,
+      .cursor-ring,
+      .cursor-label { display: none; }
+
+      .nav { top: 10px; }
+
+      .nav-inner {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        border-radius: 22px;
+      }
+
+      .brand,
+      .nav-links,
+      .nav-buy { justify-self: center; }
+
+      .brand img { width: min(260px, 60vw); }
+
+      .nav-links {
+        max-width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-size: 10px;
+      }
+
+      .nav-links a { padding: 9px 10px; }
+      .nav-buy { min-height: 44px; width: min(240px, 100%); }
+
+      .hero { padding-top: 230px; }
+      .hero-title { font-size: clamp(44px, 16vw, 68px); }
+      .section { padding: 62px 0; }
+      .section-title { font-size: clamp(38px, 13vw, 58px); }
+      .section-copy { font-size: 16px; }
+      .hero-stats { grid-template-columns: 1fr; }
+      .fx-grid { grid-template-columns: 1fr; }
+      .gallery-card,
+      .gallery-card.fx-tall { grid-template-columns: 1fr; min-height: auto; }
+      .gallery-card.fx-wide .gallery-image,
+      .gallery-card.fx-tall .gallery-image { justify-content: flex-start; }
+      .gallery-card.fx-wide .gallery-image img { max-height: none; }
+      .gallery-card.fx-tall .gallery-image img { max-height: 190px; }
+      .audio-transport { grid-template-columns: 1fr; }
+      .stem-row { grid-template-columns: 44px 1fr; }
+      .stem-meter { grid-column: 1 / -1; }
+      .belief-grid { grid-template-columns: 1fr; }
+      .price-callout { grid-template-columns: 1fr; text-align: center; }
+      .footer-inner { flex-direction: column; }
+      .release-notes { grid-template-columns: 1fr; }
+      .release-note-list li { grid-template-columns: 58px 1fr; gap: 12px; }
+    }
+
+    @media (max-width: 520px) {
+      :root { --side: 16px; }
+
+      .hero { padding-top: 248px; }
+      .hero-title { letter-spacing: -.075em; }
+      .hero-copy { font-size: 15px; }
+      .hero-actions { width: 100%; }
+      .hero-panel { padding: 12px; border-radius: 24px; }
+      .plugin-shot { border-radius: 18px; }
+      .card,
+      .gallery-card,
+      .belief-card,
+      .demo-section,
+      .price-section,
+      .release-notes { border-radius: 22px; }
+      .card h3,
+      .gallery-card h3 { font-size: 24px; }
+      .demo-section h2,
+      .price-section h2 { font-size: clamp(38px, 13vw, 58px); }
+      .demo-section p,
+      .price-section p { font-size: 15px; }
+      .final-actions .btn { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/fonts.css" />
+  <link rel="stylesheet" href="assets/site.css" />
+  <script>
+    document.documentElement.classList.add('js', 'is-loading');
+    window.yourdrumLoadStarted = performance.now();
+    window.yourdrumFailSafe = setTimeout(() => {
+      document.documentElement.classList.remove('is-loading');
+      document.body.classList.add('loaded');
+      document.getElementById('siteLoader')?.remove();
+    }, 6500);
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#top">Skip to content</a>
+  <div class="site-loader" id="siteLoader" role="status" aria-label="Loading YOURDRUM">
+    <div class="loader-top"><span>WHAT-IS-NEXT™</span><span>DRUM DESIGN ENGINE / 01</span></div>
+    <div class="loader-center">
+      <div class="loader-orbit"><div class="loader-disc"><span>YD<span class="loader-star">✳</span></span></div></div>
+      <img class="loader-logo" src="asdasfasfag.svg" alt="YOURDRUM" />
+      <p>YOUR NEXT HIT STARTS HERE.</p>
+    </div>
+    <div class="loader-bottom"><div class="loader-track"><span id="loaderProgress"></span></div><div class="loader-meta"><span id="loaderStatus">Preparing the engine</span><span id="loaderPercent">00%</span></div></div>
+  </div>
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="cursor-label" id="cursorLabel">view</div>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="YOURDRUM™ home">
+        <img src="asdasfasfag.svg" alt="YOURDRUM™ logo" />
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#overview" data-cursor="overview">Overview</a>
+        <a href="#niche" data-cursor="niche">Niche</a>
+        <a href="#demo" data-cursor="demo">Demo</a>
+        <a href="#price" data-cursor="price">Price</a>
+      </nav>
+
+      <a class="nav-buy" href="beta/index.html" data-cursor="download">Get the beta ↗</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy-wrap reveal-block">
+          <h1 class="hero-title">
+            <span class="line"><span class="word">Control</span></span>
+            <span class="line"><span class="word">Your Drum</span></span>
+            <span class="line"><span class="word headline-accent">More.</span></span>
+          </h1>
+
+          <p class="hero-copy">
+            YOURDRUM™ is a compact drum design VST built for turning one sample into a more responsive, controllable and usable drum source.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn primary price-button" href="beta/index.html" data-cursor="download">Download beta ↗</a>
+            <a class="btn secondary price-button" href="#overview" data-cursor="learn">Learn More</a>
+          </div>
+        </div>
+
+        <div class="hero-panel reveal-block" data-cursor="plugin">
+          <div class="plugin-shot">
+            <img src="img.png" alt="YOURDRUM™ full plugin interface" />
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat"><strong>Sample in</strong><span>engine out</span></div>
+            <div class="hero-stat"><strong>4 FX</strong><span>one focused chain</span></div>
+            <div class="hero-stat"><strong>$2</strong><span>planned release price</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div class="reveal-block">
+            <div class="kicker">Overview</div>
+            <h2 class="section-title">Built for producers who want control fast.</h2>
+          </div>
+          <p class="section-copy reveal-block">
+            Load a drum sample, shape how it reacts, clean or rebuild parts of the source, then push the result into something more playable. YOURDRUM™ is small on purpose: fast decisions, obvious controls, low price.
+          </p>
+        </div>
+
+        <div class="overview-layout">
+          <article class="card reveal-block" data-cursor="shape">
+            <small>Main editor</small>
+            <h3>Shape the sample before it hits the mix.</h3>
+            <p>
+              The sample view is the center of YOURDRUM™. Load a one-shot, shape the transient, and let velocity control how aggressive the hit feels.
+            </p>
+
+            <div class="big-preview">
+              <img src="shape.png" alt="YOURDRUM™ waveform shaping section" />
+            </div>
+
+            <ul class="spec-list">
+              <li>Designed for quick drum shaping without building a complicated rack.</li>
+              <li>Lower velocity can shorten the transient, so softer hits feel tighter instead of just quieter.</li>
+              <li>Useful for hats, snares, percussion, shakers and one-shot drum layers.</li>
+            </ul>
+          </article>
+
+          <div class="fx-grid">
+            <article class="gallery-card fx-wide reveal-block" data-cursor="spectral">
+              <div class="gallery-image">
+                <img src="spectral.png" alt="YOURDRUM™ Spectral Gate section" />
+              </div>
+              <div class="gallery-copy">
+                <small>Cleanup</small>
+                <h3>Spectral Gate</h3>
+                <p>Threshold, amount and FFT size cut rough frequency junk before the hit gets pushed harder.</p>
+              </div>
+            </article>
+
+            <article class="gallery-card fx-wide reveal-block" data-cursor="phase">
+              <div class="gallery-image">
+                <img src="pd.png" alt="YOURDRUM™ Phase Distortion section" />
+              </div>
+              <div class="gallery-copy">
+                <small>Motion</small>
+                <h3>Phase Distortion</h3>
+                <p>Amount, bias and mix bend the phase feel of the drum, giving the transient movement without plain clipping.</p>
+              </div>
+            </article>
+
+            <article class="gallery-card fx-tall reveal-block" data-cursor="sploinger">
+              <div class="gallery-image">
+                <img src="disper.png" alt="YOURDRUM™ Sploinger section" />
+              </div>
+              <div class="gallery-copy">
+                <small>Character</small>
+                <h3>Sploinger</h3>
+                <p>Freq and amount add an elastic snap to the hit, so the one-shot feels shaped instead of simply played back.</p>
+              </div>
+            </article>
+
+            <article class="gallery-card fx-tall reveal-block" data-cursor="resynthesis">
+              <div class="gallery-image">
+                <img src="resynth.png" alt="YOURDRUM™ Resynthesis section" />
+              </div>
+              <div class="gallery-copy">
+                <small>Rebuild</small>
+                <h3>Resynthesis</h3>
+                <p>Rebuilds the source into a cleaner or more synthetic version while keeping the original drum identity.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="niche" class="section">
+      <div class="container">
+        <div class="section-head niche-head">
+          <div class="reveal-block">
+            <div class="kicker">Niche engine</div>
+            <h2 class="section-title">A drum sampler with a shaper people actually need.</h2>
+          </div>
+          <p class="section-copy reveal-block">
+            Built around a focused one-shot shaper, YOURDRUM™ does not just trigger the sample - it changes how the hit behaves, including transient length, body, tone and movement.
+          </p>
+        </div>
+
+        <div class="belief-grid">
+          <article class="belief-card" data-cursor="one-shot">
+            <small>01 / One-shot first</small>
+            <h3>No generic sampler behavior.</h3>
+            <p>YOURDRUM™ is made for drum one-shots, not full instruments. Drop in a kick, snare, hat or shaker and shape the hit directly.</p>
+          </article>
+
+          <article class="belief-card" data-cursor="velocity">
+            <small>02 / Velocity shaper</small>
+            <h3>Softer hits can get shorter.</h3>
+            <p>When velocity goes down, the transient can be shortened, so ghost notes and softer hits feel controlled instead of weak.</p>
+          </article>
+
+          <article class="belief-card" data-cursor="buy">
+            <small>03 / Buy reason</small>
+            <h3>A focused shaping workflow.</h3>
+            <p>The idea is simple: one-shot shaping that would normally take a sampler, envelope work, transient tools and extra FX - here it is built into one focused drum plugin.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo" class="section">
+      <div class="container">
+        <div class="demo-section">
+          <div class="demo-layout">
+            <div>
+              <div class="kicker">YOURDRUM™ in action</div>
+              <h2>Compare the drums live.</h2>
+              <p>
+                Press play, switch between Bypassed and With YOURDRUM™, then solo any stem with the S button. All stems stay locked to the same moment, so the before and after comparison is instant.
+              </p>
+              <a class="btn secondary" href="beta/index.html" data-cursor="download">Get YOURDRUM™ beta</a>
+            </div>
+
+            <div class="audio-demo" id="stemDemo" data-cursor="compare">
+              <div class="audio-transport">
+                <button class="btn primary audio-play" type="button" data-action="play">Play</button>
+                <div class="mode-switch" role="group" aria-label="Processing mode">
+                  <button class="mode-btn active" type="button" data-mode="bypassed" aria-pressed="true">Bypassed</button>
+                  <button class="mode-btn" type="button" data-mode="yourdrum" aria-pressed="false">With YOURDRUM™</button>
+                </div>
+                <span class="demo-clock" id="demoClock">00.00 / 14.22</span>
+              </div>
+
+              <div class="demo-progress" aria-hidden="true"><span id="demoProgress"></span></div>
+
+              <div class="stem-list">
+                <div class="stem-row" data-stem="kick">
+                  <button class="solo-btn" type="button" data-solo="kick" aria-label="Solo kick" aria-pressed="false">S</button>
+                  <div class="stem-name"><strong>Kick</strong><span>low-end punch comparison</span></div>
+                  <div class="stem-meter"><span></span></div>
+                  <audio data-stem-audio="kick" data-mode="bypassed" src="kickbypassed.mp3" loop preload="none"></audio>
+                  <audio data-stem-audio="kick" data-mode="yourdrum" src="kickyourdrum.mp3" loop preload="none"></audio>
+                </div>
+
+                <div class="stem-row" data-stem="snare">
+                  <button class="solo-btn" type="button" data-solo="snare" aria-label="Solo snare" aria-pressed="false">S</button>
+                  <div class="stem-name"><strong>Snare</strong><span>attack and body comparison</span></div>
+                  <div class="stem-meter"><span></span></div>
+                  <audio data-stem-audio="snare" data-mode="bypassed" src="snarebypassed.mp3" loop preload="none"></audio>
+                  <audio data-stem-audio="snare" data-mode="yourdrum" src="snareyourdrum.mp3" loop preload="none"></audio>
+                </div>
+
+                <div class="stem-row" data-stem="hat">
+                  <button class="solo-btn" type="button" data-solo="hat" aria-label="Solo hat" aria-pressed="false">S</button>
+                  <div class="stem-name"><strong>Hat</strong><span>tight transient comparison</span></div>
+                  <div class="stem-meter"><span></span></div>
+                  <audio data-stem-audio="hat" data-mode="bypassed" src="hatbypassed.mp3" loop preload="none"></audio>
+                  <audio data-stem-audio="hat" data-mode="yourdrum" src="hatyourdrum.mp3" loop preload="none"></audio>
+                </div>
+
+                <div class="stem-row" data-stem="shaker">
+                  <button class="solo-btn" type="button" data-solo="shaker" aria-label="Solo shaker" aria-pressed="false">S</button>
+                  <div class="stem-name"><strong>Shaker</strong><span>movement and control comparison</span></div>
+                  <div class="stem-meter"><span></span></div>
+                  <audio data-stem-audio="shaker" data-mode="bypassed" src="shakerbypassed.mp3" loop preload="none"></audio>
+                  <audio data-stem-audio="shaker" data-mode="yourdrum" src="shakeryourdrum.mp3" loop preload="none"></audio>
+                </div>
+              </div>
+
+              <p class="audio-error" id="audioError" role="status" hidden></p><p class="audio-note">All stems stay locked to one 14.22 second loop. Switching mode or solo changes only what you hear, not the timing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="price" class="section">
+      <div class="container">
+        <div class="price-section">
+          <div class="kicker">About the price</div>
+          <h2>Cheaper than a loaf of bread.</h2>
+
+          <p>
+            Be honest: when was the last time you saw a VST cheaper than a loaf of bread? A lot of producers overpay for plugins or end up using cracked software because the barrier is too high. YOURDRUM™ goes the other way.
+          </p>
+
+          <p>
+            The planned full-release price is low because the goal is simple: make the tool approachable for everyone. Two dollars is enough to keep it real, but low enough that buying it is easier than hunting for sketchy cracked installers.
+          </p>
+
+          <div class="price-callout">
+            <div>
+              <strong>$2</strong>
+              <span>planned full-release price / beta available now</span>
+            </div>
+            <a class="btn primary" href="beta/index.html" data-cursor="download">Download the beta ↗</a>
+          </div>
+
+          <div class="final-actions">
+            <a class="btn secondary" href="#top" data-cursor="top">Back to Top</a>
+            <a class="btn primary" href="#overview" data-cursor="fx">View FX</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span>©2026 YOURDRUM™ powered by <a class="footer-link" href="https://what-is-next.vip" target="_blank" rel="noopener" data-cursor="what-is-next">what-is-next™</a></span>
+        <span>web design by <a class="footer-link" href="https://witrynaodzera.pl" target="_blank" rel="noopener" data-cursor="witrynaodzera">WITRYNAODZERA™</a></span>
+      </div>
+
+      <div class="release-notes" data-cursor="release-notes">
+        <div class="release-notes-head">
+          <strong>Changelog / Release Notes</strong>
+          <span>Latest YOURDRUM™ updates</span>
+        </div>
+        <ul class="release-note-list" id="releaseNotesList">
+          <li><span class="release-version">1.0.0</span><span>Beta distribution — Windows x64 and macOS Universal VST3.</span></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/releases.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
