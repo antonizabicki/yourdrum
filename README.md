@@ -4,6 +4,8 @@ Website: https://yourdrum.what-is-next.vip
 
 Static marketing website, interactive audio demo and beta download page. The site runs on Cloudflare Pages; installers and manual VST3 archives are published in the GitHub release `v1.0.0-beta`.
 
+Cloudflare is connected directly to this repository. Each push to `main` validates the site and publishes the `site/` directory. Pull requests use preview deployments. GitHub Actions also checks references and release metadata.
+
 ## Preview and deploy
 
 ```sh
