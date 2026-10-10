@@ -70,3 +70,13 @@ footer { padding:24px 0 36px; border-top:1px solid #292929; display:flex; justif
   .installation { margin-top:56px; }.steps { gap:28px; }footer { flex-direction:column; }
 }
 @media(prefers-reduced-motion:reduce) { * { transition:none !important; } }
+
+.purchase-intro { display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:center; }
+.purchase-art { width:100%; height:auto; border-radius:18px; border:1px solid #353535; }
+.purchase-action { display:flex; flex-direction:column; gap:10px; margin:28px 0 20px; }
+.purchase-action strong { font:800 54px Syne,Inter,sans-serif; letter-spacing:-.06em; }
+.purchase-action span,.purchase-note { font:10px "IBM Plex Mono",monospace; color:#9e9e99; line-height:1.6; }
+.purchase-btn { width:min(340px,100%); }
+.intro .purchase-note { margin-top:16px; font-size:11px; }
+.download-card .card-index { margin-bottom:22px; }
+@media(max-width:900px) { .purchase-intro { grid-template-columns:1fr; gap:0; } .purchase-art { margin-bottom:36px; } }

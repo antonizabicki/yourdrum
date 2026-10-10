@@ -1,13 +1,13 @@
 {
-  "product": "YOURDRUM\u2122",
+  "product": "YOURDRUM™",
   "notes": [
     {
       "version": "1.0.0",
       "date": "2026-10-10",
-      "title": "Beta distribution",
+      "title": "Official release",
       "changes": [
         "Windows x64 and macOS Universal VST3, with dedicated installers.",
-        "Plugin binaries preserved from the beta downloads; packaging updated."
+        "Purchase YOURDRUM through Gumroad."
       ]
     }
   ]

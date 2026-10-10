@@ -26,3 +26,5 @@ button:disabled { opacity: .6; cursor: wait; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .will-reveal:not(.revealed), .hero-title .word { opacity: 1; transform: none; }
 }
+
+.release-badge { color: #ff7b17; font: 10px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 20px; }

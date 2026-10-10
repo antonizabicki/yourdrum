@@ -1,1 +1,1 @@
-window.YOURDRUM_RELEASES = {"product": "YOURDRUM\u2122", "notes": [{"version": "1.0.0", "date": "2026-10-10", "title": "Beta distribution", "changes": ["Windows x64 and macOS Universal VST3, with dedicated installers.", "Plugin binaries preserved from the beta downloads; packaging updated."]}]};
+window.YOURDRUM_RELEASES = {"product": "YOURDRUM™", "notes": [{"version": "1.0.0", "date": "2026-10-10", "title": "Official release", "changes": ["Windows x64 and macOS Universal VST3, with dedicated installers.", "Purchase YOURDRUM through Gumroad."]}]};

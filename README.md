@@ -1,25 +1,28 @@
-# YOURDRUM public beta website
+# YOURDRUM official release website
 
 Website: https://yourdrum.what-is-next.vip
 
-Static marketing website, interactive audio demo and beta download page. The site runs on Cloudflare Pages; installers and manual VST3 archives are published in the GitHub release `v1.0.0-beta`.
+Static marketing website, interactive audio demo and system requirements/installation guide. Purchases and product delivery use Gumroad. Cloudflare Pages publishes the `site/` directory after every validated push to `main`; GitHub Actions also validates the site.
 
-Cloudflare is connected directly to this repository. Each push to `main` validates the site and publishes the `site/` directory. Pull requests use preview deployments. GitHub Actions also checks references and release metadata.
+## Gumroad product URL
+
+The current destination is the general Gumroad homepage, as requested by the owner until the listing is ready. Set the actual product URL in `site/assets/store.js` (`YOURDRUM_GUMROAD_URL`). This updates all five purchase links in the browser. Also update their static `href` fallbacks if no-JavaScript support is needed. `data-gumroad` marks every purchase link.
 
 ## Preview and deploy
 
 ```sh
 python3 scripts/check-site.py
+node --check site/assets/app.js
+node --check site/assets/store.js
 python3 -m http.server 8765 --directory site
-npx wrangler@4.149.0 pages deploy site --project-name=yourdrum --branch=main
 ```
 
-The four download routes in `site/_redirects` point to the corresponding release assets. Do not commit installer binaries to the website or upload them to Pages. `site/beta/beta-downloads.json`, `site/assets/beta-data.js` and `site/beta/downloads/SHA256SUMS.txt` describe the release payloads.
+Push to `main` to deploy through the existing Cloudflare GitHub integration. The old `/beta` and `/beta/*` routes redirect permanently to `/buy/`. Public installer download routes and catalogs have been removed from the site. Product binaries belong in the Gumroad purchase content, not the public website repository or Pages assets.
 
-## Beta status
+## Product requirements
 
-Both original plugin binaries report version 1.0.0 and are unchanged. Windows supports Windows 10/11 x64; macOS supports 15.2+ on Apple Silicon and Intel. VST3 instrument only. No Audio Unit is included.
+YOURDRUM 1.0.0 is a VST3 instrument. Windows requires Windows 10/11 x64; macOS requires 15.2+ and supports Apple Silicon and Intel. A VST3-compatible DAW is required. No Audio Unit or standalone application is included.
 
-The installers are unsigned and the macOS package is not notarized. The macOS VST3 validator passed 46 tests and failed one: the first factory preset has no name. The Windows installer still needs an installation and DAW test on Windows x64. These limits are explained on the download page. The planned $2 full release has no checkout in this beta.
+The plugin binaries are unchanged. Installers are unsigned and the macOS package is not notarized. The first macOS factory preset can appear unnamed; 32-bit floating-point audio processing is supported. Native Windows installation and DAW testing remain pending. These implementation facts are independent of the official-release branding; plugin source code was not available for a rebuild.
 
-Plugin source code is not part of this repository. Typeface licenses are in `site/assets/licenses/`.
+Typeface licenses are in `site/assets/licenses/`.

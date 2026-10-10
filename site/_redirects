@@ -1,4 +1,2 @@
-/beta/downloads/YOURDRUM-1.0.0-beta-Windows-Setup.exe https://github.com/antonizabicki/yourdrum/releases/download/v1.0.0-beta/YOURDRUM-1.0.0-beta-Windows-Setup.exe 302
-/beta/downloads/YOURDRUM-1.0.0-beta-Windows-VST3.zip https://github.com/antonizabicki/yourdrum/releases/download/v1.0.0-beta/YOURDRUM-1.0.0-beta-Windows-VST3.zip 302
-/beta/downloads/YOURDRUM-1.0.0-beta-macOS.pkg https://github.com/antonizabicki/yourdrum/releases/download/v1.0.0-beta/YOURDRUM-1.0.0-beta-macOS.pkg 302
-/beta/downloads/YOURDRUM-1.0.0-beta-macOS-VST3.zip https://github.com/antonizabicki/yourdrum/releases/download/v1.0.0-beta/YOURDRUM-1.0.0-beta-macOS-VST3.zip 302
+/beta /buy/ 301
+/beta/* /buy/ 301

@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Check deployable assets, references and release metadata without dependencies."""
+import json
+import re
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit, unquote
-import json
-import re
 
 root = Path(__file__).resolve().parents[1] / 'site'
 redirects = {}
 for line in (root / '_redirects').read_text().splitlines():
     source, target, status = line.split()
-    assert status == '302'
-    assert target.startswith('https://github.com/antonizabicki/yourdrum/releases/download/v1.0.0-beta/')
+    assert status == '301'
+    assert target == '/buy/'
     redirects[source] = target
+assert redirects == {'/beta': '/buy/', '/beta/*': '/buy/'}
 
 class References(HTMLParser):
     def __init__(self):
@@ -48,20 +49,25 @@ for file, page in pages.items():
         if url.fragment and target in pages:
             assert url.fragment in pages[target].ids, (file.name, reference)
 
-data = json.loads((root / 'beta/beta-downloads.json').read_text())
-embedded = (root / 'assets/beta-data.js').read_text().removeprefix('window.YOURDRUM_DOWNLOADS = ').strip().removesuffix(';')
-assert data == json.loads(embedded)
-sums = dict(line.split('  ')[::-1] for line in (root / 'beta/downloads/SHA256SUMS.txt').read_text().splitlines())
-for build in data['builds']:
-    for field, hash_field in [('directory', 'sha256'), ('manual', 'manualSha256')]:
-        name = Path(build[field]).name
-        assert '/beta/' + build[field] in redirects
-        assert redirects['/beta/' + build[field]].endswith('/' + name)
-        assert re.fullmatch('[a-f0-9]{64}', build[hash_field])
-        assert sums[name] == build[hash_field]
-assert len(redirects) == 4
+homepage = (root / 'index.html').read_text()
+purchase = (root / 'buy/index.html').read_text()
+assert 'Official release' in homepage
+assert 'OFFICIAL RELEASE' in purchase
+assert all('beta' not in file.read_text().lower() for file in root.rglob('*.html'))
+assert homepage.count('data-gumroad') == 4
+assert purchase.count('data-gumroad') == 1
+store_url = re.search(r"const YOURDRUM_GUMROAD_URL = '([^']+)';", (root / 'assets/store.js').read_text()).group(1)
+assert urlsplit(store_url).scheme == 'https'
+assert urlsplit(store_url).hostname == 'gumroad.com' or urlsplit(store_url).hostname.endswith('.gumroad.com')
+notes = json.loads((root / 'assets/releases.js').read_text().removeprefix('window.YOURDRUM_RELEASES = ').strip().removesuffix(';'))
+assert notes == json.loads((root / 'release-notes.json').read_text())
+assert 'download=' not in (homepage + purchase)
+assert not (root / 'beta').exists()
+assert not (root / 'assets/beta-data.js').exists()
+assert '/buy/' in (root / 'sitemap.xml').read_text()
+assert '/beta/' not in (root / 'sitemap.xml').read_text()
 files = [file for file in root.rglob('*') if file.is_file()]
 assert len(files) < 20000
 assert max(file.stat().st_size for file in files) <= 25 * 1024 * 1024
 assert not any(file.suffix.lower() in ['.exe', '.pkg', '.zip'] for file in files)
-print(f'OK: {len(files)} public assets, {len(pages)} pages, four release download routes, matching catalog and checksums.')
+print(f'OK: {len(files)} public assets, {len(pages)} pages, five Gumroad purchase links, legacy routes redirected to the purchase page.')
