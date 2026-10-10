@@ -1,33 +1,6 @@
 (() => {
   'use strict';
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const loader = document.getElementById('siteLoader');
-  const images = [...document.images];
-  let completed = 0;
-  const total = images.length + 1;
-  function progress() {
-    completed += 1;
-    const percentage = Math.round(completed / total * 100);
-    document.getElementById('loaderProgress').style.width = `${percentage}%`;
-    document.getElementById('loaderPercent').textContent = `${percentage}`.padStart(2, '0') + '%';
-    document.getElementById('loaderStatus').textContent = percentage === 100 ? 'Ready to make some noise' : 'Loading the interface';
-  }
-  const imageTasks = images.map(image => new Promise(resolve => {
-    if (image.complete) { progress(); resolve(); return; }
-    const done = () => { progress(); resolve(); };
-    image.addEventListener('load', done, { once: true });
-    image.addEventListener('error', done, { once: true });
-  }));
-  const fonts = Promise.race([document.fonts?.ready || Promise.resolve(), new Promise(resolve => setTimeout(resolve, 2500))]).then(progress);
-  Promise.race([Promise.all([...imageTasks, fonts]), new Promise(resolve => setTimeout(resolve, 5000))]).then(() => {
-    const delay = reducedMotion ? 0 : Math.max(0, 650 - (performance.now() - window.yourdrumLoadStarted));
-    setTimeout(() => {
-      clearTimeout(window.yourdrumFailSafe);
-      document.documentElement.classList.remove('is-loading');
-      document.body.classList.add('loaded');
-      setTimeout(() => loader?.remove(), reducedMotion ? 0 : 500);
-    }, delay);
-  });
   if ('IntersectionObserver' in window && !reducedMotion) {
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add('revealed'); observer.unobserve(entry.target); }
@@ -69,26 +42,37 @@
   const audioElements = [...demo.querySelectorAll('audio')];
   const stems = ['kick', 'snare', 'hat', 'shaker'];
   const meters = Object.fromEntries(stems.map(stem => [stem, demo.querySelector(`[data-stem="${stem}"] .stem-meter span`)]));
-  let context, buffers, loading, offlineData;
-  let sources = [], playing = false, offset = 0, startedAt = 0, duration = 14.22, activeMode = 'bypassed', soloStem = null, animation;
+  let context, loading, offlineData, prefetch;
+  let sources = [], playing = false, starting = false, offset = 0, startedAt = 0, duration = 14.22, activeMode = 'bypassed', soloStem = null, animation;
+  let startRequest = 0, lastFrame = 0;
+  const buffers = new Map();
+  const downloads = new Map();
   const nodes = new Map();
+  const analysers = new Map();
+  const format = value => value.toFixed(2).padStart(5, '0');
   const audible = (stem, mode) => mode === activeMode && (!soloStem || stem === soloStem);
   const position = () => playing ? (offset + Math.max(0, context.currentTime - startedAt)) % duration : offset;
-  function renderClock() {
+  function renderClock(timestamp = 0) {
+    if (playing) {
+      animation = requestAnimationFrame(renderClock);
+      if (timestamp && timestamp - lastFrame < (reducedMotion ? 100 : 1000 / 30)) return;
+      lastFrame = timestamp;
+    }
     const time = position();
-    const format = value => value.toFixed(2).padStart(5, '0');
-    clock.textContent = `${format(time)} / ${format(duration)}`;
-    bar.style.width = `${time / duration * 100}%`;
+    const text = `${format(time)} / ${format(duration)}`;
+    if (clock.textContent !== text) clock.textContent = text;
+    bar.style.transform = `scaleX(${time / duration})`;
     for (const stem of stems) {
-      const node = nodes.get(`${stem}:${activeMode}`);
+      const node = analysers.get(stem);
       let level = 0;
       if (playing && audible(stem, activeMode) && node) {
         node.analyser.getByteTimeDomainData(node.data);
-        level = Math.min(1, Math.max(...node.data.map(value => Math.abs(value - 128))) / 96);
+        let peak = 0;
+        for (let index = 0; index < node.data.length; index += 1) peak = Math.max(peak, Math.abs(node.data[index] - 128));
+        level = Math.min(1, peak / 96);
       }
-      meters[stem].style.width = `${level * 100}%`;
+      meters[stem].style.transform = `scaleX(${level})`;
     }
-    if (playing) animation = requestAnimationFrame(renderClock);
   }
   function updateControls() {
     modes.forEach(button => {
@@ -103,10 +87,11 @@
       row.classList.toggle('soloed', row.dataset.stem === soloStem);
       row.classList.toggle('muted-row', Boolean(soloStem && row.dataset.stem !== soloStem));
     });
-    if (context) for (const [key, node] of nodes) {
+    if (context) for (const [key, gain] of nodes) {
       const [stem, mode] = key.split(':');
-      node.gain.gain.cancelScheduledValues(context.currentTime);
-      node.gain.gain.setTargetAtTime(audible(stem, mode) ? .7 : 0, context.currentTime, .008);
+      if (typeof gain.gain.cancelAndHoldAtTime === 'function') gain.gain.cancelAndHoldAtTime(context.currentTime);
+      else gain.gain.cancelScheduledValues(context.currentTime);
+      gain.gain.setTargetAtTime(audible(stem, mode) ? .7 : 0, context.currentTime, .008);
     }
   }
   function loadOfflineData() {
@@ -118,81 +103,132 @@
     });
     return offlineData;
   }
-  async function readAudio(url) {
-    if (location.protocol === 'file:') {
-      await loadOfflineData();
-      const encoded = window.YOURDRUM_AUDIO[url];
-      if (!encoded) throw new Error('Missing audio file');
-      const bytes = Uint8Array.from(atob(encoded), char => char.charCodeAt(0));
-      return context.decodeAudioData(bytes.buffer);
-    }
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
-    let response;
-    try { response = await fetch(url, { signal: controller.signal }); }
-    finally { clearTimeout(timeout); }
-    if (!response.ok) throw new Error('Demo download failed');
-    return context.decodeAudioData(await response.arrayBuffer());
+  function readAudio(url) {
+    if (downloads.has(url)) return downloads.get(url);
+    const download = (async () => {
+      if (location.protocol === 'file:') {
+        await loadOfflineData();
+        const encoded = window.YOURDRUM_AUDIO[url];
+        if (!encoded) throw new Error('Missing audio file');
+        return Uint8Array.from(atob(encoded), char => char.charCodeAt(0)).buffer;
+      }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error('Demo download failed');
+        return await response.arrayBuffer();
+      } finally { clearTimeout(timeout); }
+    })();
+    downloads.set(url, download);
+    download.catch(() => { if (downloads.get(url) === download) downloads.delete(url); });
+    return download;
+  }
+  async function eachAudio(task) {
+    let index = 0;
+    const results = await Promise.allSettled(Array.from({ length: 4 }, async () => {
+      while (index < audioElements.length) await task(audioElements[index++]);
+    }));
+    const failure = results.find(result => result.status === 'rejected');
+    if (failure) throw failure.reason;
+  }
+  function warmAudio() {
+    if (location.protocol === 'file:' || loading || buffers.size === audioElements.length || prefetch) return;
+    // Download near the demo; create/resume the audio context only on Play.
+    prefetch = eachAudio(audio => readAudio(audio.getAttribute('src'))).catch(() => { prefetch = null; });
   }
   async function loadAudio() {
-    if (buffers) return;
-    if (!loading) loading = (async () => {
-      const entries = [];
-      // Bound concurrent requests for small local servers and slow connections.
-      for (let index = 0; index < audioElements.length; index += 2) {
-        const pair = await Promise.all(audioElements.slice(index, index + 2).map(async audio => {
-          const buffer = await readAudio(audio.getAttribute('src'));
-          return [`${audio.dataset.stemAudio}:${audio.dataset.mode}`, buffer];
-        }));
-        entries.push(...pair);
-      }
-      return entries;
-    })().then(entries => {
-      buffers = new Map(entries);
-      duration = Math.min(14.22, ...entries.map(([,buffer]) => buffer.duration));
+    if (buffers.size === audioElements.length) return;
+    if (!loading) loading = eachAudio(async audio => {
+      const key = `${audio.dataset.stemAudio}:${audio.dataset.mode}`;
+      if (buffers.has(key)) return;
+      const buffer = await context.decodeAudioData((await readAudio(audio.getAttribute('src'))).slice(0));
+      if (!Number.isFinite(buffer.duration) || buffer.duration <= 0) throw new Error('Invalid demo audio');
+      buffers.set(key, buffer);
+    }).then(() => {
+      duration = Math.min(14.22, ...[...buffers.values()].map(buffer => buffer.duration));
+      downloads.clear();
     }).finally(() => { loading = null; });
     return loading;
   }
+  function prepareGraph() {
+    if (nodes.size) return;
+    for (const stem of stems) {
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.connect(context.destination);
+      analysers.set(stem, { analyser, data: new Uint8Array(analyser.fftSize) });
+    }
+    for (const key of buffers.keys()) {
+      const [stem, mode] = key.split(':');
+      const gain = context.createGain();
+      gain.gain.value = audible(stem, mode) ? .7 : 0;
+      gain.connect(analysers.get(stem).analyser);
+      nodes.set(key, gain);
+    }
+  }
   function stop() {
+    startRequest += 1;
     if (playing) offset = position();
-    playing = false; cancelAnimationFrame(animation);
+    playing = false; starting = false; cancelAnimationFrame(animation);
     sources.forEach(source => { try { source.stop(); } catch {} source.disconnect(); });
-    nodes.forEach(node => { node.gain.disconnect(); node.analyser.disconnect(); });
-    sources = []; nodes.clear(); demo.classList.remove('playing');
-    play.textContent = 'Play'; play.setAttribute('aria-label', 'Play demo'); renderClock();
+    sources = []; demo.classList.remove('playing'); demo.removeAttribute('aria-busy');
+    play.disabled = false; play.textContent = 'Play'; play.setAttribute('aria-label', 'Play demo'); renderClock();
+    if (context && context.state !== 'closed') context.suspend().catch(() => {});
   }
   async function start() {
-    if (play.disabled) return;
-    play.disabled = true; play.textContent = 'Loading…'; demo.setAttribute('aria-busy', 'true');
+    if (starting || playing) return;
+    const request = ++startRequest;
+    starting = true;
+    play.disabled = true; play.textContent = 'Loading…'; play.setAttribute('aria-label', 'Loading demo'); demo.setAttribute('aria-busy', 'true');
     errorBox.hidden = true;
     try {
       const Audio = window.AudioContext || window.webkitAudioContext;
       if (!Audio) throw new Error('Web Audio unavailable');
-      context ||= new Audio();
+      if (!context) {
+        context = new Audio();
+        context.addEventListener('statechange', () => { if (playing && context.state !== 'running') stop(); });
+      }
       // Resume within the user gesture, before downloading or decoding audio.
       await context.resume();
       await loadAudio();
+      if (request !== startRequest || document.hidden) return;
+      await context.resume();
+      if (request !== startRequest || document.hidden) return;
+      prepareGraph();
+      updateControls();
       startedAt = context.currentTime + .05;
       for (const [key, buffer] of buffers) {
-        const [stem, mode] = key.split(':');
-        const source = context.createBufferSource(), gain = context.createGain(), analyser = context.createAnalyser();
+        const source = context.createBufferSource();
         source.buffer = buffer; source.loop = true; source.loopEnd = duration;
-        gain.gain.value = audible(stem, mode) ? .7 : 0; analyser.fftSize = 256;
-        source.connect(gain).connect(analyser).connect(context.destination);
-        sources.push(source); nodes.set(key, { gain, analyser, data: new Uint8Array(analyser.fftSize) });
+        source.connect(nodes.get(key));
+        sources.push(source);
         source.start(startedAt, offset % duration);
       }
-      playing = true; demo.classList.add('playing'); play.textContent = 'Pause'; play.setAttribute('aria-label', 'Pause demo'); renderClock();
-      if (document.hidden) stop();
+      playing = true; lastFrame = 0; demo.classList.add('playing'); play.textContent = 'Pause'; play.setAttribute('aria-label', 'Pause demo'); renderClock();
     } catch (error) {
+      if (request !== startRequest) return;
       console.warn('YOURDRUM demo could not start:', error);
-      stop(); errorBox.textContent = 'The demo could not load. Check the audio files and try Play again.'; errorBox.hidden = false;
-    } finally { play.disabled = false; demo.removeAttribute('aria-busy'); }
+      stop(); errorBox.textContent = 'The demo could not load. Check your connection and try Play again.'; errorBox.hidden = false;
+    } finally {
+      if (request === startRequest) {
+        starting = false; play.disabled = false; demo.removeAttribute('aria-busy');
+        if (!playing) stop();
+      }
+    }
   }
   play.addEventListener('click', () => playing ? stop() : start());
   modes.forEach(button => button.addEventListener('click', () => { activeMode = button.dataset.mode; updateControls(); }));
   solos.forEach(button => button.addEventListener('click', () => { soloStem = soloStem === button.dataset.solo ? null : button.dataset.solo; updateControls(); }));
-  document.addEventListener('visibilitychange', () => { if (document.hidden && playing) stop(); });
+  if ('IntersectionObserver' in window) {
+    const preload = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { preload.disconnect(); warmAudio(); }
+    }, { rootMargin: '300px' });
+    preload.observe(demo);
+  }
+  demo.addEventListener('pointerenter', warmAudio, { once: true });
+  demo.addEventListener('focusin', warmAudio, { once: true });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && (playing || starting)) stop(); });
   window.addEventListener('pagehide', stop);
   updateControls(); renderClock();
 })();

@@ -58,7 +58,7 @@
         radial-gradient(circle at 60% 22%, rgba(255,123,23,.08), transparent 16%),
         linear-gradient(180deg, #030303 0%, #080808 48%, #030303 100%);
       overflow-x: hidden;
-      cursor: none;
+      cursor: auto;
     }
 
     body::before {
@@ -109,61 +109,6 @@
       width: min(calc(100% - var(--side) * 2), var(--max));
       margin: 0 auto;
     }
-
-    .cursor-dot,
-    .cursor-ring,
-    .cursor-label {
-      position: fixed;
-      left: 0;
-      top: 0;
-      pointer-events: none;
-      z-index: 100;
-      transform: translate(-50%, -50%);
-    }
-
-    .cursor-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--text);
-      box-shadow: 0 0 14px rgba(255,255,255,.25);
-    }
-
-    .cursor-ring {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.52);
-      background: rgba(255,255,255,.03);
-      transition: width .18s ease, height .18s ease, border-color .18s ease, background .18s ease;
-      backdrop-filter: blur(8px);
-    }
-
-    .cursor-label {
-      margin-top: 30px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(8,8,8,.72);
-      color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      opacity: 0;
-      transition: opacity .18s ease;
-      white-space: nowrap;
-    }
-
-    .cursor-ring.active {
-      width: 56px;
-      height: 56px;
-      border-color: rgba(255,123,23,.72);
-      background: rgba(255,123,23,.08);
-      box-shadow: 0 0 36px rgba(255,123,23,.14);
-    }
-
-    .cursor-label.visible { opacity: 1; }
 
     .nav {
       position: fixed;
@@ -279,15 +224,11 @@
 
     .hero-title .word {
       display: inline-block;
-      transform: translateY(110%);
-      opacity: 0;
+      transform: none;
+      opacity: 1;
       padding-right: .05em;
     }
 
-    body.loaded .hero-title .word { animation: wordReveal .9s cubic-bezier(.2,.82,.16,1) forwards; }
-    body.loaded .hero-title .line:nth-child(1) .word { animation-delay: .05s; }
-    body.loaded .hero-title .line:nth-child(2) .word { animation-delay: .16s; }
-    body.loaded .hero-title .line:nth-child(3) .word { animation-delay: .27s; }
 
     .headline-accent {
       color: var(--orange);
@@ -713,7 +654,7 @@
       background: transparent;
       font-family: "IBM Plex Mono", monospace;
       text-transform: uppercase;
-      cursor: none;
+      cursor: pointer;
     }
 
     .mode-btn {
@@ -746,7 +687,8 @@
 
     .demo-progress span {
       display: block;
-      width: 0%;
+      width: 100%;
+      transform: scaleX(0);
       height: 100%;
       border-radius: inherit;
       background: var(--orange);
@@ -822,13 +764,14 @@
 
     .stem-meter span {
       display: block;
-      width: 0%;
+      width: 100%;
+      transform: scaleX(0);
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, var(--orange), rgba(255,255,255,.82));
       opacity: .86;
       transform-origin: left center;
-      transition: width .055s linear, opacity .18s ease;
+      transition: transform .055s linear, opacity .18s ease;
     }
 
     .stem-row.muted-row .stem-meter span {
@@ -984,10 +927,6 @@
     }
 
 
-    @keyframes wordReveal {
-      0% { transform: translateY(110%); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
 
 
     .gallery-card h3 {
@@ -1041,12 +980,6 @@
     }
 
     @media (max-width: 900px) {
-      body { cursor: auto; }
-
-      .cursor-dot,
-      .cursor-ring,
-      .cursor-label { display: none; }
-
       .nav { top: 10px; }
 
       .nav-inner {
@@ -1120,32 +1053,10 @@
   </style>
   <link rel="stylesheet" href="assets/fonts.css" />
   <link rel="stylesheet" href="assets/site.css" />
-  <script>
-    document.documentElement.classList.add('js', 'is-loading');
-    window.yourdrumLoadStarted = performance.now();
-    window.yourdrumFailSafe = setTimeout(() => {
-      document.documentElement.classList.remove('is-loading');
-      document.body.classList.add('loaded');
-      document.getElementById('siteLoader')?.remove();
-    }, 6500);
-  </script>
 </head>
 
 <body>
   <a class="skip-link" href="#top">Skip to content</a>
-  <div class="site-loader" id="siteLoader" role="status" aria-label="Loading YOURDRUM">
-    <div class="loader-top"><span>WHAT-IS-NEXT™</span><span>DRUM DESIGN ENGINE / 01</span></div>
-    <div class="loader-center">
-      <div class="loader-orbit"><div class="loader-disc"><span>YD<span class="loader-star">✳</span></span></div></div>
-      <img class="loader-logo" src="asdasfasfag.svg" alt="YOURDRUM" />
-      <p>YOUR NEXT HIT STARTS HERE.</p>
-    </div>
-    <div class="loader-bottom"><div class="loader-track"><span id="loaderProgress"></span></div><div class="loader-meta"><span id="loaderStatus">Preparing the engine</span><span id="loaderPercent">00%</span></div></div>
-  </div>
-  <div class="cursor-dot" id="cursorDot"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
-  <div class="cursor-label" id="cursorLabel">view</div>
-
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="#top" aria-label="YOURDRUM™ home">
@@ -1153,13 +1064,13 @@
       </a>
 
       <nav class="nav-links" aria-label="Main navigation">
-        <a href="#overview" data-cursor="overview">Overview</a>
-        <a href="#niche" data-cursor="niche">Niche</a>
-        <a href="#demo" data-cursor="demo">Demo</a>
-        <a href="#price" data-cursor="price">Price</a>
+        <a href="#overview">Overview</a>
+        <a href="#niche">Niche</a>
+        <a href="#demo">Demo</a>
+        <a href="#price">Price</a>
       </nav>
 
-      <a class="nav-buy" href="beta/index.html" data-cursor="download">Get the beta ↗</a>
+      <a class="nav-buy" href="beta/index.html">Get the beta ↗</a>
     </div>
   </header>
 
@@ -1178,12 +1089,12 @@
           </p>
 
           <div class="hero-actions">
-            <a class="btn primary price-button" href="beta/index.html" data-cursor="download">Download beta ↗</a>
-            <a class="btn secondary price-button" href="#overview" data-cursor="learn">Learn More</a>
+            <a class="btn primary price-button" href="beta/index.html">Download beta ↗</a>
+            <a class="btn secondary price-button" href="#overview">Learn More</a>
           </div>
         </div>
 
-        <div class="hero-panel reveal-block" data-cursor="plugin">
+        <div class="hero-panel reveal-block">
           <div class="plugin-shot">
             <img src="img.png" alt="YOURDRUM™ full plugin interface" />
           </div>
@@ -1209,7 +1120,7 @@
         </div>
 
         <div class="overview-layout">
-          <article class="card reveal-block" data-cursor="shape">
+          <article class="card reveal-block">
             <small>Main editor</small>
             <h3>Shape the sample before it hits the mix.</h3>
             <p>
@@ -1228,7 +1139,7 @@
           </article>
 
           <div class="fx-grid">
-            <article class="gallery-card fx-wide reveal-block" data-cursor="spectral">
+            <article class="gallery-card fx-wide reveal-block">
               <div class="gallery-image">
                 <img src="spectral.png" alt="YOURDRUM™ Spectral Gate section" />
               </div>
@@ -1239,7 +1150,7 @@
               </div>
             </article>
 
-            <article class="gallery-card fx-wide reveal-block" data-cursor="phase">
+            <article class="gallery-card fx-wide reveal-block">
               <div class="gallery-image">
                 <img src="pd.png" alt="YOURDRUM™ Phase Distortion section" />
               </div>
@@ -1250,7 +1161,7 @@
               </div>
             </article>
 
-            <article class="gallery-card fx-tall reveal-block" data-cursor="sploinger">
+            <article class="gallery-card fx-tall reveal-block">
               <div class="gallery-image">
                 <img src="disper.png" alt="YOURDRUM™ Sploinger section" />
               </div>
@@ -1261,7 +1172,7 @@
               </div>
             </article>
 
-            <article class="gallery-card fx-tall reveal-block" data-cursor="resynthesis">
+            <article class="gallery-card fx-tall reveal-block">
               <div class="gallery-image">
                 <img src="resynth.png" alt="YOURDRUM™ Resynthesis section" />
               </div>
@@ -1289,19 +1200,19 @@
         </div>
 
         <div class="belief-grid">
-          <article class="belief-card" data-cursor="one-shot">
+          <article class="belief-card">
             <small>01 / One-shot first</small>
             <h3>No generic sampler behavior.</h3>
             <p>YOURDRUM™ is made for drum one-shots, not full instruments. Drop in a kick, snare, hat or shaker and shape the hit directly.</p>
           </article>
 
-          <article class="belief-card" data-cursor="velocity">
+          <article class="belief-card">
             <small>02 / Velocity shaper</small>
             <h3>Softer hits can get shorter.</h3>
             <p>When velocity goes down, the transient can be shortened, so ghost notes and softer hits feel controlled instead of weak.</p>
           </article>
 
-          <article class="belief-card" data-cursor="buy">
+          <article class="belief-card">
             <small>03 / Buy reason</small>
             <h3>A focused shaping workflow.</h3>
             <p>The idea is simple: one-shot shaping that would normally take a sampler, envelope work, transient tools and extra FX - here it is built into one focused drum plugin.</p>
@@ -1320,12 +1231,12 @@
               <p>
                 Press play, switch between Bypassed and With YOURDRUM™, then solo any stem with the S button. All stems stay locked to the same moment, so the before and after comparison is instant.
               </p>
-              <a class="btn secondary" href="beta/index.html" data-cursor="download">Get YOURDRUM™ beta</a>
+              <a class="btn secondary" href="beta/index.html">Get YOURDRUM™ beta</a>
             </div>
 
-            <div class="audio-demo" id="stemDemo" data-cursor="compare">
+            <div class="audio-demo" id="stemDemo">
               <div class="audio-transport">
-                <button class="btn primary audio-play" type="button" data-action="play">Play</button>
+                <button class="btn primary audio-play" type="button" data-action="play" aria-label="Play demo">Play</button>
                 <div class="mode-switch" role="group" aria-label="Processing mode">
                   <button class="mode-btn active" type="button" data-mode="bypassed" aria-pressed="true">Bypassed</button>
                   <button class="mode-btn" type="button" data-mode="yourdrum" aria-pressed="false">With YOURDRUM™</button>
@@ -1395,12 +1306,12 @@
               <strong>$2</strong>
               <span>planned full-release price / beta available now</span>
             </div>
-            <a class="btn primary" href="beta/index.html" data-cursor="download">Download the beta ↗</a>
+            <a class="btn primary" href="beta/index.html">Download the beta ↗</a>
           </div>
 
           <div class="final-actions">
-            <a class="btn secondary" href="#top" data-cursor="top">Back to Top</a>
-            <a class="btn primary" href="#overview" data-cursor="fx">View FX</a>
+            <a class="btn secondary" href="#top">Back to Top</a>
+            <a class="btn primary" href="#overview">View FX</a>
           </div>
         </div>
       </div>
@@ -1410,11 +1321,11 @@
   <footer>
     <div class="container">
       <div class="footer-inner">
-        <span>©2026 YOURDRUM™ powered by <a class="footer-link" href="https://what-is-next.vip" target="_blank" rel="noopener" data-cursor="what-is-next">what-is-next™</a></span>
-        <span>web design by <a class="footer-link" href="https://witrynaodzera.pl" target="_blank" rel="noopener" data-cursor="witrynaodzera">WITRYNAODZERA™</a></span>
+        <span>©2026 YOURDRUM™ powered by <a class="footer-link" href="https://what-is-next.vip" target="_blank" rel="noopener">what-is-next™</a></span>
+        <span>web design by <a class="footer-link" href="https://witrynaodzera.pl" target="_blank" rel="noopener">WITRYNAODZERA™</a></span>
       </div>
 
-      <div class="release-notes" data-cursor="release-notes">
+      <div class="release-notes">
         <div class="release-notes-head">
           <strong>Changelog / Release Notes</strong>
           <span>Latest YOURDRUM™ updates</span>
